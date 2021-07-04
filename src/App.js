@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useMemo, useCallback } from 'react';
 import UserList from './UserList';
 import CreateUser from './CreateUser';
 
@@ -8,23 +8,18 @@ function countActiveUsers(users) {
 }
 
 function App() {
-
   const [inputs, setInputs] = useState({
-    username: '', 
+    username: '',
     email: ''
   });
-
   const { username, email } = inputs;
-
-  const onChange = useCallback(
-    e => {
+  const onChange = useCallback(e => {
     const { name, value } = e.target;
-    setInputs({
+    setInputs(inputs => ({
       ...inputs,
       [name]: value
-    });
-  }, [inputs]);
-
+    }));
+  }, []);
   const [users, setUsers] = useState([
     {
       id: 1,
@@ -53,27 +48,30 @@ function App() {
       username,
       email
     };
-    setUsers(users.concat(user));
+    setUsers(users => users.concat(user));
 
     setInputs({
       username: '',
       email: ''
     });
     nextId.current += 1;
-  }, [users, username, email]);
+  }, [username, email]);
 
   const onRemove = useCallback(id => {
-    setUsers(users.filter(user => user.id !== id));
-  }, [users]);
-
+    // user.id 가 파라미터로 일치하지 않는 원소만 추출해서 새로운 배열을 만듬
+    // = user.id 가 id 인 것을 제거함
+    setUsers(users => users.filter(user => user.id !== id));
+  }, []);
   const onToggle = useCallback(id => {
-    setUsers(
-      users.map(user => user.id === id ? {...user, active: !user.active } : user)
+    setUsers(users =>
+      users.map(user =>
+        user.id === id ? { ...user, active: !user.active } : user
+      )
     );
-  }, [users]);
+  }, []);
 
   const count = useMemo(() => countActiveUsers(users), [users]);
-
+  
   return (
     <>
       <CreateUser
@@ -82,7 +80,7 @@ function App() {
         onChange={onChange}
         onCreate={onCreate}
       />
-      <UserList users={users} onRemove={onRemove} onToggle={onToggle}/>
+      <UserList users={users} onRemove={onRemove} onToggle={onToggle} />
       <div>활성사용자 수 : {count}</div>
     </>
   );
